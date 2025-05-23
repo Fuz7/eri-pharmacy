@@ -1,1 +1,25 @@
 @import "tailwindcss";
+
+@font-face {
+  font-family: "poppins";
+  src: url("@fonts/Poppins-var.otf") format("opentype");
+}
+
+@theme {
+  --font-poppins: "poppins";
+}
+
+@theme{
+  --color-primary: #1B56FD;
+  --color-secondary: #ffffff;
+  --color-buttonHover:#55A4FE;
+  --color-filterHover:#E6EDFF;
+  --color-lightFont: #F4F3F8;
+  ---color-darkFont: #2E2E2E;
+  ---color-grayFont: #959595;
+  ---color-deleteButton: #FA0000;
+  ---color-deleteButtonHover:#FF5959;
+  ---color-evenTable:  #F6F6F6;
+
+}
+
