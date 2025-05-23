@@ -1,6 +1,11 @@
 import { useState } from "react";
 
-export default function CategoryModal({ categoryGroup, identifierText }) {
+export default function CategoryModal({
+  categoryGroup,
+  identifierText,
+  setName,
+  setIsActive
+}) {
   return (
     <div
       className="w-[370px] h-[390px] bg-white rounded-[20px] 
@@ -10,22 +15,39 @@ export default function CategoryModal({ categoryGroup, identifierText }) {
       <h1 className="text-[24px] font-semibold font-poppins">Search by</h1>
       <div className="grid grid-cols-2 grid-rows-2 gap-[20px]">
         {categoryGroup.map((item) => (
-          <CategoryItem key={{ identifierText } + item.name} {...item} />
+          <CategoryItem
+            key={{ identifierText } + item.name}
+            {...item}
+            setName={setName}
+            setIsActive={setIsActive}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function CategoryItem({ title, imgLink, hoveredImgLink }) {
+function CategoryItem({
+  title,
+  imgLink,
+  hoveredImgLink,
+  setName,
+  setIsActive,
+}) {
   const [isHovered, setIsHovered] = useState(false);
   return (
     <button
-      className={`${isHovered?'bg-filterHover' :'bg-[#F7F7F7]'} min-h-[130px] aspect-square 
+      className={`${
+        isHovered ? "bg-filterHover" : "bg-[#F7F7F7]"
+      } min-h-[130px] aspect-square 
         rounded-[10px] flex flex-col gap-[10px] pt-[32px] items-center
         cursor-pointer`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={() => {
+        setIsActive(false);
+        setName(title);
+      }}
     >
       <img
         className="w-[50px]"

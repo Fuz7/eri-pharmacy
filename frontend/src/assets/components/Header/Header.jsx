@@ -9,7 +9,10 @@ import hoveredQuantity from "@images/hoveredQuantity.svg";
 import defaultPrice from "@images/defaultPrice.svg";
 import hoveredPrice from "@images/hoveredPrice.svg";
 import SortByButton from "./SortByButton";
-export default function Header() {
+export default function Header({ productFilters }) {
+  const { searchFilter, setSearchFilter,
+   } =
+    productFilters;
 
   const categoryGroup = [
     {
@@ -39,9 +42,13 @@ export default function Header() {
       <div className="flex gap-[50px]">
         <SearchBar />
         <div className="flex gap-[30px] items-center h-full">
-          <SearchByButton categoryGroup={categoryGroup}/>
-          <SortByButton categoryGroup={categoryGroup}/>
+          <SearchByButton
+            categoryGroup={categoryGroup}
+            searchFilter={searchFilter}
+            setSearchFilter={setSearchFilter}
+          />
           <div className="w-[3px] min-h-[35px] bg-grayFont"></div>
+          <SortByButton categoryGroup={categoryGroup} productFilters={productFilters} />
         </div>
       </div>
       <button></button>
