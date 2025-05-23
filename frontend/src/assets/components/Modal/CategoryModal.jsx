@@ -16,7 +16,7 @@ export default function CategoryModal({
       <div className="grid grid-cols-2 grid-rows-2 gap-[20px]">
         {categoryGroup.map((item) => (
           <CategoryItem
-            key={{ identifierText } + item.name}
+            key={{ identifierText } + item.title}
             {...item}
             setName={setName}
             setIsActive={setIsActive}

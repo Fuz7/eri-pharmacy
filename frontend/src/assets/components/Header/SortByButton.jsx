@@ -3,7 +3,7 @@ import CategoryModal from "../Modal/CategoryModal";
 import defaultDescendingButton from "@images/defaultDescendingButton.svg";
 import defaultAscendingButton from "@images/defaultAscendingButton.svg";
 import focusedDescendingButton from "@images/focusedDescendingButton.svg";
-import focusedAscendingButton from "@images/focusedAscendingButton.svg";
+  import focusedAscendingButton from "@images/focusedAscendingButton.svg";
 import { useState } from "react";
 
 export default function SortByButton({ categoryGroup, productFilters }) {
@@ -70,7 +70,7 @@ export default function SortByButton({ categoryGroup, productFilters }) {
       >
         <CategoryModal
           categoryGroup={categoryGroup}
-          identifierText={"searchBy"}
+          identifierText={"sortBy"}
           setName={setSortFilter}
           setIsActive={setIsActive}
         />

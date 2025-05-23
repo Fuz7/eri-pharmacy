@@ -9,6 +9,7 @@ import hoveredQuantity from "@images/hoveredQuantity.svg";
 import defaultPrice from "@images/defaultPrice.svg";
 import hoveredPrice from "@images/hoveredPrice.svg";
 import SortByButton from "./SortByButton";
+import AddMedicineButton from "./AddMedicineButton";
 export default function Header({ productFilters }) {
   const { searchFilter, setSearchFilter,
    } =
@@ -39,7 +40,7 @@ export default function Header({ productFilters }) {
 
   return (
     <header className="flex justify-between">
-      <div className="flex gap-[50px]">
+      <div className="flex gap-[50px] items-end">
         <SearchBar />
         <div className="flex gap-[30px] items-center h-full">
           <SearchByButton
@@ -51,7 +52,7 @@ export default function Header({ productFilters }) {
           <SortByButton categoryGroup={categoryGroup} productFilters={productFilters} />
         </div>
       </div>
-      <button></button>
+        <AddMedicineButton />
     </header>
   );
 }

@@ -4,3 +4,8 @@
   border: solid 1px #0117d863;
   border-radius: 20px;
 }
+
+.modalBackground{
+  background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(3px);
+}
