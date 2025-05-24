@@ -1,0 +1,12 @@
+import express from "express";
+import Routes from "./routes/index.js";
+const app = express();
+
+app.get("/", (req, res) => res.send("Hello, world!"));
+
+Routes(app)
+
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`My first Express app - listening on port ${PORT}!`);
+});
