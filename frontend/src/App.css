@@ -9,3 +9,11 @@
   background-color: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(3px);
 }
+
+td{
+  text-align: center;
+}
+
+tr > th:nth-of-type(2){
+  text-align: left;
+}

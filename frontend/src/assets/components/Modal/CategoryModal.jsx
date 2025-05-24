@@ -10,7 +10,7 @@ export default function CategoryModal({
     <div
       className="w-[370px] h-[390px] bg-white rounded-[20px] 
     border border-grayFont py-[20px] px-[40px]
-    flex flex-col gap-[20px]"
+    flex flex-col gap-[20px] z-10"
     >
       <h1 className="text-[24px] font-semibold font-poppins">Search by</h1>
       <div className="grid grid-cols-2 grid-rows-2 gap-[20px]">
@@ -39,7 +39,7 @@ function CategoryItem({
     <button
       className={`${
         isHovered ? "bg-filterHover" : "bg-[#F7F7F7]"
-      } min-h-[130px] aspect-square 
+      } min-h-[130px] aspect-square
         rounded-[10px] flex flex-col gap-[10px] pt-[32px] items-center
         cursor-pointer`}
       onMouseEnter={() => setIsHovered(true)}

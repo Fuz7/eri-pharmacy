@@ -39,7 +39,7 @@ export default function Header({ productFilters }) {
   ];
 
   return (
-    <header className="flex justify-between">
+    <header className="flex justify-between flex-wrap gap-[10px]">
       <div className="flex gap-[50px] items-end">
         <SearchBar />
         <div className="flex gap-[30px] items-center h-full">

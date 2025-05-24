@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./App.css";
 import Background from "./assets/components/Background";
 import Header from "./assets/components/Header/Header";
+import Table from "./assets/components/Table/Table";
 
 function App() {
   const [searchFilter, setSearchFilter] = useState("Name");
@@ -15,6 +16,7 @@ function App() {
     orderFilter,
     setOrderFilter
   };
+  
   return (
     <div
       className="w-[100%] min-h-[100vh] h-[100vh] relative py-[50px] px-[90px] 
@@ -25,6 +27,7 @@ function App() {
           Eri Pharmacy
         </h1>
         <Header productFilters={productFilters} />
+        <Table />
       </main>
       <Background />
     </div>

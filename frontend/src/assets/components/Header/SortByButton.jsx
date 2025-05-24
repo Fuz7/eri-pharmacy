@@ -59,7 +59,7 @@ export default function SortByButton({ categoryGroup, productFilters }) {
       </button>
       <div
         className={`absolute left-0 
-      transition-all
+      transition-all z-10
         ${
           isActive
             ? "top-[60px] opacity-100 visible"

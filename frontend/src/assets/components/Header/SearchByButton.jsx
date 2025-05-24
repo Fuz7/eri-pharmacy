@@ -21,7 +21,7 @@ export default function SearchByButton({ categoryGroup,searchFilter,setSearchFil
       </span>
       <div
         className={`absolute right-0 
-      transition-all
+      transition-all z-10
         ${
           isActive
             ? "top-[60px] opacity-100 visible"
