@@ -1,8 +1,8 @@
 import { useState } from "react";
-import EditButton from "./EditButton";
+import MoreButton from "./MoreButton";
 
 export default function Table() {
-  const [editIndexModal, setEditIndexModal] = useState(null);
+  const [moreIndexModal, setMoreIndexModal] = useState(null);
 
   return (
     <div
@@ -12,11 +12,11 @@ export default function Table() {
       <div className="overflow-auto h-full  ">
         <table
           className="table-fixed w-full min-h-[500px] 
-    bg-white border-collapse "
+    bg-white border-collapse  "
         >
           <TableHead />
           <tbody className="">
-            {Array.from({ length: 7 }, (_, i) => (
+            {Array.from({ length: 11 }, (_, i) => (
               <tr
                 className="even:bg-evenTable w-full text-[28px] h-[84px]
             font-medium"
@@ -31,10 +31,10 @@ export default function Table() {
                   className=" relative
                 h-full z-[2]"
                 >
-                  <EditButton
-                  index={i}
-                    editIndexModal={editIndexModal}
-                    setEditIndexModal={setEditIndexModal}
+                  <MoreButton
+                    index={i}
+                    moreIndexModal={moreIndexModal}
+                    setMoreIndexModal={setMoreIndexModal}
                   />
                 </td>
               </tr>
