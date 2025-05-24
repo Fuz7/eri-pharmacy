@@ -1,7 +1,5 @@
-export async function getAllMedicines(req, res){
-  
+export async function getAllMedicines(req, res) {
   return res.status(200).json({
-    data: "yes",
+    data: process.env.POSTGRES_USER,
   });
-};
-
+}

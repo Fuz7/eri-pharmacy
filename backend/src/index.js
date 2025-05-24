@@ -1,10 +1,11 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
 import Routes from "./routes/index.js";
 const app = express();
 
 app.get("/", (req, res) => res.send("Hello, world!"));
-
-Routes(app)
+Routes(app);
 
 const PORT = 3000;
 app.listen(PORT, () => {
