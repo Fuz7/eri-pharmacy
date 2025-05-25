@@ -25,8 +25,8 @@ export default function Table() {
                 <td className="text-grayFont font-semibold">{i + 1}</td>
                 <td>Paracetamol</td>
                 <td>Capsule</td>
-                <td>10</td>
                 <td>$20.00</td>
+                <td>10</td>
                 <td
                   className=" relative
                 h-full z-[2]"
@@ -56,8 +56,8 @@ function TableHead() {
         <th className="w-[100px]"></th>
         <th className="w-[calc((100%-200px)*0.4)] font-semibold">Name</th>
         <th className="w-[calc((100%-200px)*0.3)] font-semibold">Category</th>
-        <th className="w-[calc((100%-200px)*0.15)] font-semibold">Quantity</th>
         <th className="w-[calc((100%-200px)*0.15)] font-semibold">Price</th>
+        <th className="w-[calc((100%-200px)*0.15)] font-semibold">Quantity</th>
         <th className="w-[100px] font-semibold"></th>
       </tr>
     </thead>

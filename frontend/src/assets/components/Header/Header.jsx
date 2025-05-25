@@ -27,14 +27,14 @@ export default function Header({ productFilters }) {
       hoveredImgLink: hoveredCategory,
     },
     {
-      title: "Quantity",
-      imgLink: defaultQuantity,
-      hoveredImgLink: hoveredQuantity,
-    },
-    {
       title: "Price",
       imgLink: defaultPrice,
       hoveredImgLink: hoveredPrice,
+    },
+    {
+      title: "Quantity",
+      imgLink: defaultQuantity,
+      hoveredImgLink: hoveredQuantity,
     },
   ];
 
