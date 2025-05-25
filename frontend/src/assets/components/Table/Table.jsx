@@ -1,9 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MoreButton from "./MoreButton";
+import backendUrl from "../../../utils/backendUrl";
 
-export default function Table() {
+export default function Table({isFetchingData,setIsFetchingData}) {
   const [moreIndexModal, setMoreIndexModal] = useState(null);
-
+  useEffect(()=>{
+    if(isFetchingData ){
+      const fetchTableData = async()=>{
+        setIsFetchingData(false)
+        console.log(backendUrl + "")
+        
+      }
+      fetchTableData()
+    }
+  },[isFetchingData,setIsFetchingData])
   return (
     <div
       className="w-full h-[500px] overflow-clip rounded-t-[10px]

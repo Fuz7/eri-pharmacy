@@ -9,6 +9,9 @@ services:
     - ./frontend:/app
     depends_on:
       - backend
+    environment:
+      - VITE_BACKEND_URL=${VITE_BACKEND_URL}
+      - VITE_BACKEND_PORT=${VITE_BACKEND_PORT}
   backend:
     build: 
       context: ./backend

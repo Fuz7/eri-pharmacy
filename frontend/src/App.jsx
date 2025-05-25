@@ -7,7 +7,7 @@ import Table from "./assets/components/Table/Table";
 function App() {
   const [searchFilter, setSearchFilter] = useState("Name");
   const [sortFilter, setSortFilter] = useState("Name");
-  const [orderFilter,setOrderFilter] = useState("descending")
+  const [orderFilter,setOrderFilter] = useState("DESC")
   const productFilters = {
     searchFilter,
     setSearchFilter,
@@ -16,7 +16,7 @@ function App() {
     orderFilter,
     setOrderFilter
   };
-  
+  const [isFetchingData,setIsFetchingData] = useState(true)
   return (
     <div
       className="w-[100%] min-h-[100vh] h-[100vh] relative py-[50px] px-[90px] 
@@ -27,7 +27,7 @@ function App() {
           Eri Pharmacy
         </h1>
         <Header productFilters={productFilters} />
-        <Table />
+        <Table isFetchingData={isFetchingData} setIsFetchingData={setIsFetchingData} />
       </main>
       <Background />
     </div>
