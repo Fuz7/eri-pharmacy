@@ -39,7 +39,9 @@ export default function DropDownInput() {
       `}
       >
         <div className="flex flex-col gap-[10px] w-full">
-          <DropDownItem name={"Capsule"} />
+          {/* Add Mo Og Capsule Diri */}
+          <DropDownItem name={"Capsule"} />  
+          <DropDownItem name={"Syrup"} />  
         </div>
       </span>
     </div>

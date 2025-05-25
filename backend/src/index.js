@@ -2,7 +2,10 @@ import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
 import Routes from "./routes/index.js";
+import { createMedicinesTableIfNotExists } from "./controller/medicines.js";
 const app = express();
+
+createMedicinesTableIfNotExists()
 
 app.get("/", (req, res) => res.send("Hello, world!"));
 Routes(app);
