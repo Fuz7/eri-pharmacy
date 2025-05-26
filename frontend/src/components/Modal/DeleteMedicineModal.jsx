@@ -47,6 +47,7 @@ export default function DeleteMedecineModal({
             className="min-h-[60px] w-[255px] text-darkFont
            text-[20px] border border-grayFont rounded-[10px] 
            cursor-pointer"
+           onClick={()=>setIsDeleteShown(false)}
           >
             Cancel
           </button>
