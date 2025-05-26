@@ -6,7 +6,8 @@ services:
     ports:
       - 5173:5173
     volumes:
-    - ./frontend:/app
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
     environment:
@@ -20,6 +21,7 @@ services:
       - 3000:3000
     volumes:
       - ./backend:/app
+      - /app/node_modules
     depends_on:
       - db
     env_file:
