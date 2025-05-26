@@ -1,4 +1,4 @@
-import {insertMedicineDB, searchMedicines, updateMedicineDB} from "../model/medicines.js";
+import {deleteMedicineByIdDB, insertMedicineDB, searchMedicines, updateMedicineDB} from "../model/medicines.js";
 
 export async function getMedicinesByFilter(req, res) {
   const { searchQuery, searchBy, sortBy, orderDirection } = req.query;
@@ -22,8 +22,12 @@ export async function insertMedicine(req,res){
 }
 export async function updateMedicine(req,res){
   const {id} = req.params
-  console.log("sad")
   const{name,category,price,quantity} = req.body
   const result = await updateMedicineDB(id,name,category,price,quantity)
+  return res.status(200).json(result)
+}
+export async function deleteMedicineById(req,res){
+  const {id} = req.params
+  const result = await deleteMedicineByIdDB(id)
   return res.status(200).json(result)
 }

@@ -18,18 +18,18 @@ export default function EditMedicineModal({
   const [price, setPrice] = useState(data.price + "");
   const [isEditing, setisEditing] = useState();
   const [isError, setIsError] = useState(false);
-  const editMedicine = async () => {
-    const { data } = await axios.patch(`/api/medicines/${data.id + ""}`, {
+  const editMedicine = async (id) => {
+    const { data } = await axios.patch(`/api/medicines/${id + ""}`, {
       name,
       category,
-      quantity, 
-      price
+      price,
+      quantity
     });
-    console.log(data)
     return data;
   };
+  console.log(data)
   const mutation = useMutation({
-    mutationFn: editMedicine,
+    mutationFn: ()=>editMedicine(data.id),
     onSettled: () => {
       console.log("settled");
       setisEditing(false);

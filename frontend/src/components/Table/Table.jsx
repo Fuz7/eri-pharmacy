@@ -6,9 +6,10 @@ export default function Table({
   isFetchingData,
   setIsFetchingData,
   productFilters,
+  productFilterRefs,
 }) {
   const [moreIndexModal, setMoreIndexModal] = useState(null);
-  const { data } = useTable(isFetchingData, setIsFetchingData, productFilters);
+  const { data } = useTable(isFetchingData, setIsFetchingData, productFilters,productFilterRefs);
    return (
     <div
       className="w-full h-[500px] overflow-clip rounded-t-[10px]

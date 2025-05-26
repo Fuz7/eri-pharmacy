@@ -14,6 +14,7 @@ export default function Header({
   productFilters,
   isFetchingData,
   setIsFetchingData,
+  productFilterRefs
 }) {
   const { searchQuery, setSearchQuery, searchFilter, setSearchFilter } =
     productFilters;
@@ -49,6 +50,8 @@ export default function Header({
           setSearchQuery={setSearchQuery}
           isFetchingData={isFetchingData}
           setIsFetchingData={setIsFetchingData}
+          productFilters={productFilters}
+          productFilterRefs={productFilterRefs}
         />
         <div className="flex gap-[30px] items-center h-full">
           <SearchByButton

@@ -62,7 +62,9 @@ export default function MoreButton({
       {isDeleteShown &&
         createPortal(
           <DeleteMedecineModal
+            id={data.id}
             setMoreIndexModal={setMoreIndexModal}
+            setIsFetchingData={setIsFetchingData}
             setIsDeleteShown={setIsDeleteShown}
           />,
           document.body

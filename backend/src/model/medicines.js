@@ -80,7 +80,7 @@ export const deleteMedicineByIdDB = async (id) => {
     RETURNING *;
   `;
 
-  const result = await pool.query(query, [id]);
+  const result = await db.query(query, [id]);
   return true; // returns the deleted row, or undefined if not found
 };
 

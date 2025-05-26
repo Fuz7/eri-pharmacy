@@ -4,18 +4,20 @@ import { useEffect } from "react";
 export default function useTable(
   isFetchingData,
   setIsFetchingData,
-  productFilters
+  productFilters,
+  productFilterRefs
 ) {
   const queryClient = useQueryClient();
   const { searchQuery, searchFilter, sortFilter, orderFilter } = productFilters;
+  const { searchQueryRef, searchFilterRef, sortFilterRef, orderFilterRef } = productFilterRefs;
 
   const fetchMedicines = async () => {
     const { data } = await axios.get("/api/medicines", {
       params: {
-        searchQuery,
-        searchBy: searchFilter,
-        sortBy: sortFilter,
-        orderDirection: orderFilter,
+        searchQuery:searchQueryRef.current,
+        searchBy: searchFilterRef.current,
+        sortBy: sortFilterRef.current,
+        orderDirection: orderFilterRef.current,
       },
     });
     return data;

@@ -1,4 +1,25 @@
-export default function DeleteMedecineModal({ setIsDeleteShown }) {
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import { useState } from "react";
+
+export default function DeleteMedecineModal({
+  setIsDeleteShown,
+  setIsFetchingData,
+  id,
+}) {
+  const deleteMedicine = async (id) => {
+    const { data } = await axios.delete(`/api/medicines/${id + ""}`);
+    return data;
+  };
+  const [isDeleting, setIsDeleting] = useState(false);
+  const mutation = useMutation({
+    mutationFn: () => deleteMedicine(id),
+    onSettled: () => {
+      setIsDeleteShown(false);
+      setIsFetchingData(true);
+      setIsDeleting(false);
+    },
+  });
   return (
     <div
       className="fixed w-full min-h-[100vh] modalBackground flex 
@@ -26,17 +47,23 @@ export default function DeleteMedecineModal({ setIsDeleteShown }) {
             className="min-h-[60px] w-[255px] text-darkFont
            text-[20px] border border-grayFont rounded-[10px] 
            cursor-pointer"
-           onClick={()=>setIsDeleteShown(false)}
           >
             Cancel
           </button>
           <button
-            className="min-h-[60px]  bg-deleteButton text-lightFont
-          w-[255px] rounded-[10px] text-[20px] cursor-pointer"
+            disabled={isDeleting}
+            onClick={() => {
+              setIsDeleting(true);
+              mutation.mutate();
+            }}
+            className={`min-h-[60px]  ${
+              isDeleting ? "bg-deleteButtonHover" : "bg-deleteButton"
+            } text-lightFont
+          w-[255px] rounded-[10px] text-[20px] cursor-pointer`}
           >
             Delete
           </button>
-          </div>
+        </div>
       </div>
     </div>
   );

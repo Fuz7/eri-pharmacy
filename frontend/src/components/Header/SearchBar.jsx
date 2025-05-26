@@ -5,7 +5,20 @@ export default function SearchBar({
   setSearchQuery,
   isFetchingData,
   setIsFetchingData,
+  productFilters,
+  productFilterRefs,
 }) {
+  const {
+    searchQueryRef,
+    searchFilterRef,
+    sortFilterRef,
+    orderFilterRef
+  } = productFilterRefs;
+  const {
+    searchFilter,
+    sortFilter,
+    orderFilter
+  } = productFilters;
   return (
     <div className="relative">
       <input
@@ -15,6 +28,10 @@ export default function SearchBar({
         onKeyDown={(e) => {
           if (e.key === "Enter" && isFetchingData === false) {
             setIsFetchingData(true);
+            searchQueryRef.current = searchQuery
+            searchFilterRef.current = searchFilter
+            sortFilterRef.current = sortFilter
+            orderFilterRef.current = orderFilter
           }
         }}
         value={searchQuery}
