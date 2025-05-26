@@ -5,5 +5,5 @@ export default (app) => {
   const router = express.Router();
 
   router.use("/medicines", medicineRouter);
-  app.use("/", router);
+  app.use("/api", router);
 };

@@ -1,8 +1,8 @@
 import express from "express";
-import { getAllMedicines } from "../controller/medicines.js";
+import { getMedicinesByFilter } from "../controller/medicines.js";
 
 const medicineRouter = express.Router();
 
-medicineRouter.get("/", getAllMedicines);
+medicineRouter.get("/", getMedicinesByFilter);
 
 export default medicineRouter;

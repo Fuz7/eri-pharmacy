@@ -37,18 +37,17 @@ export const seedMedicines = async () => {
   }
 };
 
-export const getAllMedicinesOrderedByNameDesc = async () => {
-  try {
-    const result = await db.query(`
-      SELECT * FROM medicines
-      ORDER BY name DESC;
-    `);
-    return result.rows;
-  } catch (err) {
-    console.error("error cant get all the medicines");
-  }
-};
-
+// export const getAllMedicinesOrderedByNameDesc = async () => {
+//   try {
+//     const result = await db.query(`
+//       SELECT * FROM medicines
+//       ORDER BY name DESC;
+//     `);
+//     return result.rows;
+//   } catch (err) {
+//     console.error("error cant get all the medicines");
+//   }
+// };
 
 export const updateMedicine = async (id, name, category, price, quantity) => {
   const query = `
@@ -74,32 +73,54 @@ export const deleteMedicineById = async (id) => {
   return true; // returns the deleted row, or undefined if not found
 };
 
-export const searchMedicines = async (searchBy, orderBy, searchQuery) => {
-  const validColumns = ['name', 'category', 'price', 'quantity'];
-  const validDirections = ['ASC', 'DESC'];
-
-  if (!validColumns.includes(searchBy)) {
-    throw new Error('Invalid searchBy column');
+export const searchMedicines = async (
+  searchQuery = "",
+  searchBy = null,
+  sortBy = "name",
+  orderDirection = "ASC"
+) => {
+  const validColumns = ["name", "category", "price", "quantity"];
+  const validDirections = ["ASC", "DESC"];
+  
+  // Validate sort column
+  if (!validColumns.includes(sortBy.toLowerCase())) {
+    throw new Error(`Invalid sortBy: ${sortBy}`);
   }
 
-  if (!validDirections.includes(orderBy.toUpperCase())) {
-    throw new Error('Invalid order direction');
+  // Validate sort direction
+  const dir = orderDirection.toUpperCase();
+  if (!validDirections.includes(dir)) {
+    throw new Error(`Invalid orderDirection: ${orderDirection}`);
   }
 
+  // Prepare filtering if requested
+  let filterClause = "";
   const values = [];
-  let filterClause = '';
 
-  if (searchQuery && searchQuery.trim() !== '') {
-    filterClause = `WHERE name ILIKE $1 OR category ILIKE $1`;
-    values.push(`%${searchQuery}%`);
+  if (
+    searchBy &&
+    validColumns.includes(searchBy.toLowerCase()) &&
+    searchQuery.trim() !== ""
+  ) {
+    if (["quantity", "price"].includes(searchBy.toLowerCase())) {
+      // Numeric filter — use WHERE with = operator
+      values.push(searchQuery.trim()); // no casting
+      filterClause = `WHERE ${searchBy} = $1`;
+    } else {
+      // Text filter — use ILIKE for case-insensitive search
+      values.push(`%${searchQuery.trim()}%`);
+      filterClause = `WHERE ${searchBy} ILIKE $1`;
+    }
   }
 
+  // Build final SQL query
   const query = `
-    SELECT * FROM medicines
+    SELECT *
+    FROM medicines
     ${filterClause}
-    ORDER BY ${searchBy} ${orderBy.toUpperCase()}
+    ORDER BY ${sortBy} ${dir};
   `;
 
-  const result = await pool.query(query, values);
+  const result = await db.query(query, values);
   return result.rows;
 };

@@ -1,7 +1,16 @@
-import { getAllMedicinesOrderedByNameDesc } from "../model/medicines.js";
+import {  searchMedicines} from "../model/medicines.js";
 
-export async function getAllMedicines(req, res) {
-  const result = await getAllMedicinesOrderedByNameDesc();
+export async function getMedicinesByFilter(req, res) {
+  console.log("called");
+  const { searchQuery, searchBy, sortBy, orderDirection } = req.query;
+
+  const result = await searchMedicines(
+    searchQuery,
+    searchBy,
+    sortBy,
+    orderDirection
+  );
+  console.log(result)
   return res.status(200).json({
     data: result,
   });

@@ -31,7 +31,7 @@ export default function SortByButton({ categoryGroup, productFilters }) {
       <button
         onClick={() =>
           orderFilter === "DESC"
-            ? setOrderFilter("ASD")
+            ? setOrderFilter("ASC")
             : setOrderFilter("DESC")
         }
         className="flex gap-[6px] cursor-pointer
@@ -50,7 +50,7 @@ export default function SortByButton({ categoryGroup, productFilters }) {
         <img
           className="w-[18px]"
           src={
-            orderFilter === "ASD"
+            orderFilter === "ASC"
               ? focusedAscendingButton
               : defaultAscendingButton
           }

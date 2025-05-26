@@ -1,20 +1,15 @@
 import { useEffect, useState } from "react";
 import MoreButton from "./MoreButton";
-import backendUrl from "../../../utils/backendUrl";
+import useTable from "../../hooks/Table/useTable";
 
-export default function Table({isFetchingData,setIsFetchingData}) {
+export default function Table({
+  isFetchingData,
+  setIsFetchingData,
+  productFilters,
+}) {
   const [moreIndexModal, setMoreIndexModal] = useState(null);
-  useEffect(()=>{
-    if(isFetchingData ){
-      const fetchTableData = async()=>{
-        setIsFetchingData(false)
-        console.log(backendUrl + "")
-        
-      }
-      fetchTableData()
-    }
-  },[isFetchingData,setIsFetchingData])
-  return (
+  const { data } = useTable(isFetchingData, setIsFetchingData, productFilters);
+   return (
     <div
       className="w-full h-[500px] overflow-clip rounded-t-[10px]
     mt-[30px]"

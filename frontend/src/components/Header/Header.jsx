@@ -10,9 +10,12 @@ import defaultPrice from "@images/defaultPrice.svg";
 import hoveredPrice from "@images/hoveredPrice.svg";
 import SortByButton from "./SortByButton";
 import AddMedicineButton from "./AddMedicineButton";
-export default function Header({ productFilters }) {
-  const { searchFilter, setSearchFilter,
-   } =
+export default function Header({
+  productFilters,
+  isFetchingData,
+  setIsFetchingData,
+}) {
+  const { searchQuery, setSearchQuery, searchFilter, setSearchFilter } =
     productFilters;
 
   const categoryGroup = [
@@ -41,7 +44,12 @@ export default function Header({ productFilters }) {
   return (
     <header className="flex justify-between flex-wrap gap-[10px]">
       <div className="flex gap-[50px] items-end">
-        <SearchBar />
+        <SearchBar
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          isFetchingData={isFetchingData}
+          setIsFetchingData={setIsFetchingData}
+        />
         <div className="flex gap-[30px] items-center h-full">
           <SearchByButton
             categoryGroup={categoryGroup}
@@ -49,10 +57,13 @@ export default function Header({ productFilters }) {
             setSearchFilter={setSearchFilter}
           />
           <div className="w-[3px] min-h-[35px] bg-grayFont"></div>
-          <SortByButton categoryGroup={categoryGroup} productFilters={productFilters} />
+          <SortByButton
+            categoryGroup={categoryGroup}
+            productFilters={productFilters}
+          />
         </div>
       </div>
-        <AddMedicineButton />
+      <AddMedicineButton />
     </header>
   );
 }
