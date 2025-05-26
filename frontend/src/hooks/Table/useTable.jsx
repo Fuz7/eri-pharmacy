@@ -8,7 +8,6 @@ export default function useTable(
   productFilterRefs
 ) {
   const queryClient = useQueryClient();
-  const { searchQuery, searchFilter, sortFilter, orderFilter } = productFilters;
   const { searchQueryRef, searchFilterRef, sortFilterRef, orderFilterRef } = productFilterRefs;
 
   const fetchMedicines = async () => {

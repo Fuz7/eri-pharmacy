@@ -1,19 +1,26 @@
 import toggleButton from "@images/toggleButton.svg";
 import { useState } from "react";
 
-export default function DropDownInput({category,setCategory}) {
+export default function DropDownInput({ category, setCategory }) {
   const [isActive, setIsActive] = useState(false);
-  
+
+  const medicineCategoryList = [
+    "Antibiotic",
+    "Anti-inflammatory",
+    "Antihistamine",
+    "Antacid",
+    "Antidepressant",
+    "Pain Reliever",
+  ];
+
   return (
     <div className="relative">
       <button
-        className={
-          `${
+        className={`${
           isActive ? "border-primary " : "border-grayFont"
         } rounded-[10px] border 
     w-full min-h-[54px] px-[20px] flex items-center relative 
-    text-[20px] justify-between cursor-pointer`
-  }
+    text-[20px] justify-between cursor-pointer`}
         onClick={() => setIsActive(!isActive)}
       >
         {category}
@@ -27,8 +34,7 @@ export default function DropDownInput({category,setCategory}) {
       </button>
 
       <span
-        className={
-          `w-full bg-white p-[10px] absolute 
+        className={`w-full bg-white p-[10px] absolute 
       top-0 rounded-[10px] border  transition-all
       border-grayFont text-darkFont 
       ${
@@ -40,21 +46,29 @@ export default function DropDownInput({category,setCategory}) {
       >
         <div className="flex flex-col gap-[10px] w-full">
           {/* Add Mo Og Capsule Diri */}
-          <DropDownItem setIsActive={setIsActive} setCategory={setCategory} name={"Capsule"} />  
-          <DropDownItem setIsActive={setIsActive} setCategory={setCategory} name={"Syrup"} />  
+          {medicineCategoryList.map((name, index) => {
+            return (
+              <DropDownItem
+                key={name + index}
+                setIsActive={setIsActive}
+                setCategory={setCategory}
+                name={ name }
+              />
+            );
+          })}
         </div>
       </span>
     </div>
   );
 }
 
-function DropDownItem({name,setCategory,setIsActive}) {
+function DropDownItem({ name, setCategory, setIsActive }) {
   return (
     <button
-    onClick={()=>{
-      setCategory(name)
-      setIsActive(false)
-    }}
+      onClick={() => {
+        setCategory(name);
+        setIsActive(false);
+      }}
       className="w-full flex items-center pl-[10px]
           py-[8px]  text-[20px] cursor-pointer leading-none
           hover:bg-filterHover hover:text-primary
