@@ -9,6 +9,8 @@ export default function MoreButton({
   index,
   moreIndexModal,
   setMoreIndexModal,
+  setIsFetchingData,
+  data,
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isDeleteShown, setIsDeleteShown] = useState(false);
@@ -46,8 +48,14 @@ export default function MoreButton({
        border border-grayFont px-[5px] py-[10px]
        flex flex-col gap-[10px]`}
         >
-          <EditButton setIsEditShown={setIsEditShown} setMoreIndexModal={setMoreIndexModal} />
-          <DeleteButton setIsDeleteShown={setIsDeleteShown} setMoreIndexModal={setMoreIndexModal} />
+          <EditButton
+            setIsEditShown={setIsEditShown}
+            setMoreIndexModal={setMoreIndexModal}
+          />
+          <DeleteButton
+            setIsDeleteShown={setIsDeleteShown}
+            setMoreIndexModal={setMoreIndexModal}
+          />
         </span>
       </div>
 
@@ -64,6 +72,8 @@ export default function MoreButton({
           <EditMedicineModal
             setMoreIndexModal={setMoreIndexModal}
             setIsEditShown={setIsEditShown}
+            setIsFetchingData={setIsFetchingData}
+            data={data}
           />,
           document.body
         )}

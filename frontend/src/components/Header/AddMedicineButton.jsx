@@ -3,7 +3,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import AddMedicineModal from "../Modal/AddMedicineModal";
 
-export default function AddMedicineButton() {
+export default function AddMedicineButton({setIsFetchingData}) {
   const [isShown, setIsShown] = useState(false);
 
   return (
@@ -22,7 +22,7 @@ export default function AddMedicineButton() {
       </button>
       {isShown &&
         createPortal(
-          <AddMedicineModal setIsShown={setIsShown} />,
+          <AddMedicineModal setIsShown={setIsShown} setIsFetchingData={setIsFetchingData} />,
           document.body
         )}
     </>

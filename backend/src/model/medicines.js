@@ -48,8 +48,19 @@ export const seedMedicines = async () => {
 //     console.error("error cant get all the medicines");
 //   }
 // };
+export const insertMedicineDB = async (name, category, price, quantity) => {
+  const query = `
+    INSERT INTO medicines (name, category, price, quantity)
+    VALUES ($1, $2, $3, $4)
+    RETURNING *;
+  `;
 
-export const updateMedicine = async (id, name, category, price, quantity) => {
+  const values = [name, category, price, quantity];
+  const result = await db.query(query, values);
+  return result.rows[0]; // return the inserted row
+};
+
+export const updateMedicineDB = async (id, name, category, price, quantity) => {
   const query = `
     UPDATE medicines
     SET name = $1, category = $2, price = $3, quantity = $4
@@ -62,7 +73,7 @@ export const updateMedicine = async (id, name, category, price, quantity) => {
   return true; // returns the updated row
 };
 
-export const deleteMedicineById = async (id) => {
+export const deleteMedicineByIdDB = async (id) => {
   const query = `
     DELETE FROM medicines
     WHERE id = $1

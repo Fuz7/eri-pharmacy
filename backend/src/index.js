@@ -4,7 +4,7 @@ import express from "express";
 import Routes from "./routes/index.js";
 import { createMedicinesTableIfNotExists, seedMedicines } from "./model/medicines.js";
 const app = express();
-
+app.use(express.json())
 createMedicinesTableIfNotExists()
 app.get("/", (req, res) => res.send("Hello, world!"));
 Routes(app);

@@ -1,7 +1,7 @@
 import toggleButton from "@images/toggleButton.svg";
 import { useState } from "react";
 
-export default function DropDownInput() {
+export default function DropDownInput({category,setCategory}) {
   const [isActive, setIsActive] = useState(false);
   
   return (
@@ -16,7 +16,7 @@ export default function DropDownInput() {
   }
         onClick={() => setIsActive(!isActive)}
       >
-        Capsule
+        {category}
         <img
           className={`w-[22px] mt-[4px] transition-all ${
             isActive && "rotate-180"
@@ -40,17 +40,21 @@ export default function DropDownInput() {
       >
         <div className="flex flex-col gap-[10px] w-full">
           {/* Add Mo Og Capsule Diri */}
-          <DropDownItem name={"Capsule"} />  
-          <DropDownItem name={"Syrup"} />  
+          <DropDownItem setIsActive={setIsActive} setCategory={setCategory} name={"Capsule"} />  
+          <DropDownItem setIsActive={setIsActive} setCategory={setCategory} name={"Syrup"} />  
         </div>
       </span>
     </div>
   );
 }
 
-function DropDownItem({name}) {
+function DropDownItem({name,setCategory,setIsActive}) {
   return (
     <button
+    onClick={()=>{
+      setCategory(name)
+      setIsActive(false)
+    }}
       className="w-full flex items-center pl-[10px]
           py-[8px]  text-[20px] cursor-pointer leading-none
           hover:bg-filterHover hover:text-primary

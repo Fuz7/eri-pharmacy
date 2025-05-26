@@ -8,38 +8,32 @@ export default function useTable(
 ) {
   const queryClient = useQueryClient();
   const { searchQuery, searchFilter, sortFilter, orderFilter } = productFilters;
-  const fetchMedicines = async (
-    searchQuery,
-    searchBy,
-    sortBy,
-    orderDirection
-  ) => {
+
+  const fetchMedicines = async () => {
     const { data } = await axios.get("/api/medicines", {
       params: {
         searchQuery,
-        searchBy,
-        sortBy,
-        orderDirection,
+        searchBy: searchFilter,
+        sortBy: sortFilter,
+        orderDirection: orderFilter,
       },
     });
-    console.log(data);
     return data;
   };
   const { data } = useQuery({
     queryKey: ["medicines",isFetchingData],
-    queryFn: () =>
-      fetchMedicines(searchQuery, searchFilter, sortFilter, orderFilter),
-    enabled: !!isFetchingData,
+    queryFn: fetchMedicines,
+    enabled: true,
   });
 
   useEffect(() => {
     if (isFetchingData) {
       const fetchTableData = async () => {
- 
         setIsFetchingData(false);
+        queryClient.invalidateQueries(["medicines"]);
       };
       fetchTableData();
-    }
+    } 
   }, [isFetchingData, setIsFetchingData, queryClient]);
-  return { data };
+  return { data: data?.data };
 }

@@ -63,7 +63,7 @@ export default function Header({
           />
         </div>
       </div>
-      <AddMedicineButton />
+      <AddMedicineButton setIsFetchingData={setIsFetchingData} />
     </header>
   );
 }

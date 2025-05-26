@@ -21,28 +21,49 @@ export default function Table({
         >
           <TableHead />
           <tbody className="">
-            {Array.from({ length: 11 }, (_, i) => (
+
+            {data?.map((data,i)=>
+            {
+              return (
               <tr
                 className="even:bg-evenTable w-full text-[28px] h-[84px]
             font-medium"
-                key={i}
+                key={ data.id+"" +i + data.name +data.price}
               >
                 <td className="text-grayFont font-semibold">{i + 1}</td>
-                <td>Paracetamol</td>
-                <td>Capsule</td>
-                <td>$20.00</td>
-                <td>10</td>
+                <td>{data.name}</td>
+                <td>{data.category}</td>
+                <td>${data.price}</td>
+                <td>{data.quantity}</td>
                 <td
                   className=" relative
                 h-full z-[2]"
                 >
                   <MoreButton
                     index={i}
+                    data={data}
                     moreIndexModal={moreIndexModal}
+                    setIsFetchingData={setIsFetchingData}
                     setMoreIndexModal={setMoreIndexModal}
                   />
                 </td>
               </tr>
+
+            )})}
+            {Array.from({length:(5 - data?.length)},(_,i)=>(
+              <tr
+                className="even:bg-evenTable w-full text-[28px] h-[84px]
+            font-medium"
+                key={i}
+              >
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+
             ))}
           </tbody>
         </table>
