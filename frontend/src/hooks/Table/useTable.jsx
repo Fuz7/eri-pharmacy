@@ -21,20 +21,17 @@ export default function useTable(
     });
     return data;
   };
-  const { data } = useQuery({
+  const { data, isPending, isError } = useQuery({
     queryKey: ["medicines",isFetchingData],
     queryFn: fetchMedicines,
     enabled: true,
   });
 
   useEffect(() => {
-    if (isFetchingData) {
-      const fetchTableData = async () => {
-        setIsFetchingData(false);
-        queryClient.invalidateQueries(["medicines"]);
-      };
-      fetchTableData();
-    } 
+    if (!isFetchingData) return;
+    setIsFetchingData(false);
+    // React Query v5 takes a filters object, not a bare array.
+    queryClient.invalidateQueries({ queryKey: ["medicines"] });
   }, [isFetchingData, setIsFetchingData, queryClient]);
-  return { data: data?.data };
+  return { data: data?.data, isPending, isError };
 }

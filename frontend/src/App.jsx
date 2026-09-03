@@ -5,8 +5,10 @@ import Header from "./components/Header/Header";
 import Table from "./components/Table/Table";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useRef } from "react";
+
+const queryClient = new QueryClient();
+
 function App() {
-  const queryClient = new QueryClient();
   const [isFetchingData, setIsFetchingData] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState("");
