@@ -1,0 +1,22 @@
+# Applies to the repository-root build context used by nginx/Dockerfile.staging.
+# (backend/.dockerignore covers the build whose context is ./backend.)
+
+**/node_modules
+**/dist
+**/*.log
+
+# Secrets and infrastructure state — these must never enter a build context.
+.env
+.env.*
+!.env.example
+infra/
+**/.terraform
+**/*.tfstate
+**/*.tfstate.*
+**/*.pem
+
+.git
+.gitignore
+.lavish/
+docs/
+README.md

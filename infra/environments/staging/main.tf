@@ -116,7 +116,7 @@ resource "aws_instance" "app" {
   vpc_security_group_ids      = [aws_security_group.app.id]
   associate_public_ip_address = true
   key_name                    = var.key_name
-
+  iam_instance_profile = aws_iam_instance_profile.app.name
   root_block_device {
     volume_size = 20
     volume_type = "gp3"
@@ -130,4 +130,37 @@ resource "aws_instance" "app" {
 output "ec2_public_ip" {
   description = "Public IP of the EC2 instance"
   value       = aws_instance.app.public_ip
+}
+
+resource "aws_iam_role" "app" {
+  name = "${local.name}-ec2"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "ec2.amazonaws.com" }
+      Action    = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "ssm_read" {
+  role = aws_iam_role.app.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["ssm:GetParameter", "ssm:GetParametersByPath"]
+      Resource = "arn:aws:ssm:${var.region}:*:parameter/${var.project_name}/${var.environment}/*"
+    }, {
+      Effect   = "Allow"
+      Action   = ["kms:Decrypt"]
+      Resource = "*"     # the aws/ssm managed key
+    }]
+  })
+}
+
+resource "aws_iam_instance_profile" "app" {
+  name = "${local.name}-ec2"
+  role = aws_iam_role.app.name
 }

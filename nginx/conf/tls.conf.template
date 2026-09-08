@@ -1,0 +1,33 @@
+# HTTPS. Selected automatically once the certificate for __SERVER_NAME__ exists.
+
+resolver 127.0.0.11 valid=10s ipv6=off;
+
+server {
+    listen 80;
+    server_name __SERVER_NAME__;
+
+    # Renewal still happens over HTTP, so this must not be redirected.
+    location /.well-known/acme-challenge/ {
+        root /srv/acme;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name __SERVER_NAME__;
+
+    ssl_certificate     /etc/letsencrypt/live/__SERVER_NAME__/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/__SERVER_NAME__/privkey.pem;
+
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache   shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    include /etc/nginx/snippets/app.conf;
+}

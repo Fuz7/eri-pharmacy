@@ -1,0 +1,17 @@
+# Plain HTTP. Used until a certificate exists for __SERVER_NAME__.
+# The entrypoint swaps in tls.conf.template once one is present.
+
+resolver 127.0.0.11 valid=10s ipv6=off;
+
+server {
+    listen 80;
+    server_name __SERVER_NAME__;
+
+    # certbot --webroot writes its challenge files here. Must stay on
+    # plain HTTP: this is how both issuance and renewal prove ownership.
+    location /.well-known/acme-challenge/ {
+        root /srv/acme;
+    }
+
+    include /etc/nginx/snippets/app.conf;
+}
