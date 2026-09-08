@@ -34,3 +34,21 @@ resource "aws_instance" "app" {
     Name = "${local.name}-ec2"
   }
 }
+
+# A stable public address. Without this the instance gets a fresh auto-assigned
+# IP on every stop/start, which would break the deploy script, any bookmark,
+# and — once there is a domain — the DNS A record. That makes it a prerequisite
+# for TLS, since certificates are issued against names that must resolve here.
+#
+# depends_on: an EIP cannot be associated until the VPC has an internet
+# gateway attached, and Terraform does not infer that ordering on its own.
+resource "aws_eip" "app" {
+  instance = aws_instance.app.id
+  domain   = "vpc"
+
+  depends_on = [aws_internet_gateway.main]
+
+  tags = {
+    Name = "${local.name}-eip"
+  }
+}
