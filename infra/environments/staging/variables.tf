@@ -37,3 +37,15 @@ variable "key_name" {
   description = "Name of an existing EC2 key pair for SSH access"
   type        = string
 }
+
+variable "github_repository" {
+  description = "owner/repo allowed to assume the GitHub Actions role"
+  type        = string
+  default     = "Fuz7/eri-pharmacy"
+}
+
+variable "github_branch" {
+  description = "Branch allowed to assume the GitHub Actions role. Must match the branch the staging workflow triggers on (.github/workflows/staging.yml) — a mismatch fails at the credentials step, not the build."
+  type        = string
+  default     = "develop"
+}

@@ -1,0 +1,67 @@
+# Stage 1: build both images and push them to ECR, tagged with the commit SHA.
+# Deployment is still manual — nothing here touches the running instance, so a
+# failure cannot break staging.
+
+name: staging
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ap-southeast-1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Required for OIDC. Without it the credentials step fails with a
+      # confusing "Not authorized to perform sts:AssumeRoleWithWebIdentity".
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assume the AWS role via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Two different build contexts: nginx builds from the repository root
+      # because it needs both ./frontend (the source) and ./nginx (the config).
+      # The backend builds from ./backend alone.
+      - name: Build and push nginx
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./nginx/Dockerfile.staging
+          push: true
+          tags: ${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-nginx:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/docker/Dockerfile.staging
+          push: true
+          tags: ${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-backend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Summary
+        run: |
+          echo "### Images pushed" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "NGINX_IMAGE=${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-nginx:${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "BACKEND_IMAGE=${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-backend:${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
