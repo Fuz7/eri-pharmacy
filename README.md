@@ -61,10 +61,10 @@ Requires **Node 22+** and a **PostgreSQL 16** server. Two config values are hard
 
 ### 1. Start a database
 
-Easiest is to run just the database in Docker and leave the apps on your host:
+Easiest is to run just the database in Docker and leave the apps on your host: 
 
 ```bash
-docker compose up db
+docker compose up db 
 ```
 
 Otherwise, point at any local Postgres and create the database:
