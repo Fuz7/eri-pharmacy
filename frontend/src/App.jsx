@@ -49,7 +49,7 @@ function App() {
       >
         <main className=" w-full min-h-full glassy px-[65px] py-[50px]">
           <h1 className="font-poppins font-bold text-primary text-[50px] leading-none mb-[40px]">
-            Eri Pharmacy Stagin
+            Eri Pharmacy Not Production
           </h1>
           <Header
             productFilters={productFilters}
