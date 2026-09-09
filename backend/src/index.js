@@ -2,10 +2,9 @@ import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
 import Routes from "./routes/index.js";
-import { createMedicinesTableIfNotExists, seedMedicines } from "./model/medicines.js";
 const app = express();
 app.use(express.json())
-createMedicinesTableIfNotExists()
+// Schema is owned by backend/migrations, applied before the app starts.
 app.get("/", (req, res) => res.send("Hello, world!"));
 Routes(app);
 const PORT = 3000;

@@ -59,6 +59,13 @@ aws ecr get-login-password --region "$REGION" \
 echo "==> Pulling images"
 docker compose -f "$COMPOSE_FILE" pull
 
+echo "==> Running migrations"
+# A one-off container on the new image. Compose starts the database first via
+# depends_on and waits for its healthcheck, then this exits. Running it before
+# `up -d` means the new code never sees an out-of-date schema — and `set -e`
+# aborts the deploy here rather than starting a backend that cannot work.
+docker compose -f "$COMPOSE_FILE" run --rm backend npm run migrate
+
 echo "==> Starting"
 docker compose -f "$COMPOSE_FILE" up -d
 

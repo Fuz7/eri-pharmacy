@@ -1,15 +1,16 @@
-# Builds both images, pushes them to ECR tagged with the commit SHA, then runs
-# deploy.sh on the production instance through SSM.
+# Builds both images and pushes them to ECR tagged with the commit SHA, then
+# deploys to the production instance through SSM.
 #
 # Mirrors staging, differing only in: the branch (main), the ECR repository
 # names, the instance tag, and the role variable (AWS_ROLE_ARN_PRODUCTION).
 #
-# NOTE: this deploys on every push to main with no gate. For a human in the
-# loop, either drop the `push:` trigger and rely on workflow_dispatch, or add
-# `environment: production` to the job and set required reviewers on that
-# environment in GitHub. Declaring an environment also changes the OIDC subject
-# claim to the ":environment:" form, which the trust policy in
-# infra/environments/production/github_oidc.tf would then have to match.
+# Build and deploy are separate jobs. They run back to back with no approval,
+# but the split means the Actions UI says which half failed, a flaky deploy can
+# be re-run without rebuilding, and a gate can be added later by putting
+# `environment: production` on the deploy job alone — that would pause it for a
+# reviewer while builds keep running ungated. Declaring an environment changes
+# the OIDC subject claim to the ":environment:" form, so the trust policy in
+# infra/environments/production/github_oidc.tf would need that variant added.
 
 name: production
 
@@ -20,6 +21,7 @@ on:
 
 env:
   AWS_REGION: ap-southeast-1
+  ECR_PREFIX: eri-pharmacy-production
 
 jobs:
   build:
@@ -30,6 +32,11 @@ jobs:
       # confusing "Not authorized to perform sts:AssumeRoleWithWebIdentity".
       id-token: write
       contents: read
+
+    outputs:
+      # Step outputs are job-scoped, so the deploy job cannot see this unless
+      # it is republished here.
+      short_sha: ${{ steps.tags.outputs.short_sha }}
 
     steps:
       - uses: actions/checkout@v4
@@ -61,6 +68,7 @@ jobs:
       # Two different build contexts: nginx builds from the repository root
       # because it needs both ./frontend (the source) and ./nginx (the config).
       # The backend builds from ./backend alone.
+      #
       # provenance: false keeps buildx from pushing an image index plus a
       # separate in-toto attestation alongside each image. Without it a single
       # push creates three ECR artifacts, which makes the console confusing and
@@ -74,8 +82,8 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ${{ steps.ecr.outputs.registry }}/eri-pharmacy-production-nginx:${{ github.sha }}
-            ${{ steps.ecr.outputs.registry }}/eri-pharmacy-production-nginx:${{ steps.tags.outputs.short_sha }}
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_PREFIX }}-nginx:${{ github.sha }}
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_PREFIX }}-nginx:${{ steps.tags.outputs.short_sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -87,20 +95,52 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ${{ steps.ecr.outputs.registry }}/eri-pharmacy-production-backend:${{ github.sha }}
-            ${{ steps.ecr.outputs.registry }}/eri-pharmacy-production-backend:${{ steps.tags.outputs.short_sha }}
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_PREFIX }}-backend:${{ github.sha }}
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_PREFIX }}-backend:${{ steps.tags.outputs.short_sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Runs deploy.sh on the instance through SSM. No SSH, so no private key
-      # in GitHub and port 22 can stay closed.
-      #
+      - name: Summary
+        run: |
+          {
+            echo "### Images pushed"
+            echo '```'
+            echo "${{ env.ECR_PREFIX }}-nginx:${{ steps.tags.outputs.short_sha }}"
+            echo "${{ env.ECR_PREFIX }}-backend:${{ steps.tags.outputs.short_sha }}"
+            echo '```'
+            echo "Roll back with \`./deploy.sh <older-sha>\` on the instance."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    # To require an approval before production changes, add:
+    #   environment: production
+    # and configure required reviewers on that environment in GitHub.
+
+    permissions:
+      # Credentials do not cross job boundaries — this job assumes the role
+      # again for itself.
+      id-token: write
+      contents: read
+
+    env:
+      INSTANCE_TAG: eri-pharmacy-production-ec2
+
+    steps:
+      # No checkout or buildx here: this job only calls the AWS CLI. The
+      # instance already has deploy.sh, put there by scripts/production/push.sh.
+      - name: Assume the AWS role via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN_PRODUCTION }}
+          aws-region: ${{ env.AWS_REGION }}
+
       # `sudo -u ec2-user` matters: SSM executes as root, and deploy.sh rewrites
       # .env every run. Left as root, that file becomes unwritable by ec2-user
       # and a later manual deploy fails with permission denied.
-      - name: Deploy to production
-        env:
-          INSTANCE_TAG: eri-pharmacy-production-ec2
+      - name: Run deploy.sh through SSM
         run: |
           instance_id=$(aws ec2 describe-instances \
             --filters "Name=tag:Name,Values=$INSTANCE_TAG" \
@@ -116,7 +156,7 @@ jobs:
           command_id=$(aws ssm send-command \
             --instance-ids "$instance_id" \
             --document-name AWS-RunShellScript \
-            --comment "deploy ${{ steps.tags.outputs.short_sha }}" \
+            --comment "deploy ${{ needs.build.outputs.short_sha }}" \
             --parameters commands="sudo -u ec2-user /home/ec2-user/app/deploy.sh ${{ github.sha }}" \
             --query Command.CommandId --output text)
           echo "Command: $command_id"
@@ -140,10 +180,4 @@ jobs:
 
           [ "$status" = "Success" ] || { echo "Deploy finished with status: $status" >&2; exit 1; }
 
-      - name: Summary
-        run: |
-          echo "### Images pushed" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "./deploy.sh ${{ steps.tags.outputs.short_sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "(or the full SHA ${{ github.sha }})" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "Deployed ${{ needs.build.outputs.short_sha }}" >> "$GITHUB_STEP_SUMMARY"

@@ -12,6 +12,8 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
 COPY src ./src
+# Applied by deploy.sh before the new containers start.
+COPY migrations ./migrations
 
 EXPOSE 3000
 # Not `npm run start` — that script uses `node --watch`, which is a

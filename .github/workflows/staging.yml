@@ -1,6 +1,10 @@
-# Builds both images, pushes them to ECR tagged with the commit SHA, then runs
-# deploy.sh on the staging instance through SSM. No SSH key and no AWS
-# credentials are stored in GitHub — see infra/environments/staging.
+# Builds both images and pushes them to ECR tagged with the commit SHA, then
+# deploys to the production instance through SSM.
+#
+# Build and deploy are separate jobs so the Actions UI says which half failed
+# and a flaky deploy can be re-run without rebuilding. Staging deploys on every
+# push to develop with no gate, which is what staging is for — the production
+# workflow is the mirror of this one and carries the notes on adding approval.
 
 name: staging
 
@@ -11,6 +15,7 @@ on:
 
 env:
   AWS_REGION: ap-southeast-1
+  ECR_PREFIX: eri-pharmacy-staging
 
 jobs:
   build:
@@ -21,6 +26,11 @@ jobs:
       # confusing "Not authorized to perform sts:AssumeRoleWithWebIdentity".
       id-token: write
       contents: read
+
+    outputs:
+      # Step outputs are job-scoped, so the deploy job cannot see this unless
+      # it is republished here.
+      short_sha: ${{ steps.tags.outputs.short_sha }}
 
     steps:
       - uses: actions/checkout@v4
@@ -52,11 +62,12 @@ jobs:
       # Two different build contexts: nginx builds from the repository root
       # because it needs both ./frontend (the source) and ./nginx (the config).
       # The backend builds from ./backend alone.
+      #
       # provenance: false keeps buildx from pushing an image index plus a
       # separate in-toto attestation alongside each image. Without it a single
       # push creates three ECR artifacts, which makes the console confusing and
       # makes the lifecycle policy's image count mean roughly a third of what it
-      # looks like. Single-platform staging builds have no use for provenance.
+      # looks like. Single-platform builds have no use for provenance.
       - name: Build and push nginx
         uses: docker/build-push-action@v6
         with:
@@ -65,8 +76,8 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-nginx:${{ github.sha }}
-            ${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-nginx:${{ steps.tags.outputs.short_sha }}
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_PREFIX }}-nginx:${{ github.sha }}
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_PREFIX }}-nginx:${{ steps.tags.outputs.short_sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -78,20 +89,52 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-backend:${{ github.sha }}
-            ${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-backend:${{ steps.tags.outputs.short_sha }}
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_PREFIX }}-backend:${{ github.sha }}
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_PREFIX }}-backend:${{ steps.tags.outputs.short_sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Runs deploy.sh on the instance through SSM. No SSH, so no private key
-      # in GitHub and port 22 can stay closed.
-      #
+      - name: Summary
+        run: |
+          {
+            echo "### Images pushed"
+            echo '```'
+            echo "${{ env.ECR_PREFIX }}-nginx:${{ steps.tags.outputs.short_sha }}"
+            echo "${{ env.ECR_PREFIX }}-backend:${{ steps.tags.outputs.short_sha }}"
+            echo '```'
+            echo "Roll back with \`./deploy.sh <older-sha>\` on the instance."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    # To require an approval before production changes, add:
+    #   environment: staging
+    # and configure required reviewers on that environment in GitHub.
+
+    permissions:
+      # Credentials do not cross job boundaries — this job assumes the role
+      # again for itself.
+      id-token: write
+      contents: read
+
+    env:
+      INSTANCE_TAG: eri-pharmacy-staging-ec2
+
+    steps:
+      # No checkout or buildx here: this job only calls the AWS CLI. The
+      # instance already has deploy.sh, put there by scripts/staging/push.sh.
+      - name: Assume the AWS role via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN_STAGING }}
+          aws-region: ${{ env.AWS_REGION }}
+
       # `sudo -u ec2-user` matters: SSM executes as root, and deploy.sh rewrites
       # .env every run. Left as root, that file becomes unwritable by ec2-user
       # and a later manual deploy fails with permission denied.
-      - name: Deploy to staging
-        env:
-          INSTANCE_TAG: eri-pharmacy-staging-ec2
+      - name: Run deploy.sh through SSM
         run: |
           instance_id=$(aws ec2 describe-instances \
             --filters "Name=tag:Name,Values=$INSTANCE_TAG" \
@@ -107,7 +150,7 @@ jobs:
           command_id=$(aws ssm send-command \
             --instance-ids "$instance_id" \
             --document-name AWS-RunShellScript \
-            --comment "deploy ${{ steps.tags.outputs.short_sha }}" \
+            --comment "deploy ${{ needs.build.outputs.short_sha }}" \
             --parameters commands="sudo -u ec2-user /home/ec2-user/app/deploy.sh ${{ github.sha }}" \
             --query Command.CommandId --output text)
           echo "Command: $command_id"
@@ -131,10 +174,4 @@ jobs:
 
           [ "$status" = "Success" ] || { echo "Deploy finished with status: $status" >&2; exit 1; }
 
-      - name: Summary
-        run: |
-          echo "### Images pushed" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "./deploy.sh ${{ steps.tags.outputs.short_sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "(or the full SHA ${{ github.sha }})" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "Deployed ${{ needs.build.outputs.short_sha }}" >> "$GITHUB_STEP_SUMMARY"
