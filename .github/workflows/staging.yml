@@ -45,12 +45,18 @@ jobs:
       # Two different build contexts: nginx builds from the repository root
       # because it needs both ./frontend (the source) and ./nginx (the config).
       # The backend builds from ./backend alone.
+      # provenance: false keeps buildx from pushing an image index plus a
+      # separate in-toto attestation alongside each image. Without it a single
+      # push creates three ECR artifacts, which makes the console confusing and
+      # makes the lifecycle policy's image count mean roughly a third of what it
+      # looks like. Single-platform staging builds have no use for provenance.
       - name: Build and push nginx
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./nginx/Dockerfile.staging
           push: true
+          provenance: false
           tags: ${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-nginx:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -61,6 +67,7 @@ jobs:
           context: ./backend
           file: ./backend/docker/Dockerfile.staging
           push: true
+          provenance: false
           tags: ${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-backend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

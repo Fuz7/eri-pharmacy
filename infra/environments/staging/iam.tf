@@ -33,3 +33,32 @@ resource "aws_iam_instance_profile" "app" {
   name = "${local.name}-ec2"
   role = aws_iam_role.app.name
 }
+
+# Pull permission for the images CI pushes. Scoped to the two staging
+# repositories rather than using AmazonEC2ContainerRegistryReadOnly, which
+# grants read on every repository in the account.
+resource "aws_iam_role_policy" "ecr_pull" {
+  name = "${local.name}-ec2-ecr-pull"
+  role = aws_iam_role.app.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        # Must be "*": the registry auth token is account-wide.
+        Effect   = "Allow"
+        Action   = "ecr:GetAuthorizationToken"
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:BatchGetImage",
+          "ecr:GetDownloadUrlForLayer",
+        ]
+        Resource = [for r in aws_ecr_repository.app : r.arn]
+      },
+    ]
+  })
+}
