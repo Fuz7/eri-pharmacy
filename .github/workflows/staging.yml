@@ -42,6 +42,13 @@ jobs:
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      # Images get both the full SHA and the 7-character form, so `./deploy.sh`
+      # accepts whichever you copied — git log shows the short one, the job
+      # summary below prints the long one.
+      - name: Compute tags
+        id: tags
+        run: echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
       # Two different build contexts: nginx builds from the repository root
       # because it needs both ./frontend (the source) and ./nginx (the config).
       # The backend builds from ./backend alone.
@@ -57,7 +64,9 @@ jobs:
           file: ./nginx/Dockerfile.staging
           push: true
           provenance: false
-          tags: ${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-nginx:${{ github.sha }}
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-nginx:${{ github.sha }}
+            ${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-nginx:${{ steps.tags.outputs.short_sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -68,14 +77,64 @@ jobs:
           file: ./backend/docker/Dockerfile.staging
           push: true
           provenance: false
-          tags: ${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-backend:${{ github.sha }}
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-backend:${{ github.sha }}
+            ${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-backend:${{ steps.tags.outputs.short_sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # Runs deploy.sh on the instance through SSM. No SSH, so no private key
+      # in GitHub and port 22 can stay closed.
+      #
+      # `sudo -u ec2-user` matters: SSM executes as root, and deploy.sh rewrites
+      # .env every run. Left as root, that file becomes unwritable by ec2-user
+      # and a later manual deploy fails with permission denied.
+      - name: Deploy to staging
+        env:
+          INSTANCE_TAG: eri-pharmacy-staging-ec2
+        run: |
+          instance_id=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=$INSTANCE_TAG" \
+                      "Name=instance-state-name,Values=running" \
+            --query 'Reservations[0].Instances[0].InstanceId' --output text)
+
+          if [ -z "$instance_id" ] || [ "$instance_id" = "None" ]; then
+            echo "No running instance tagged $INSTANCE_TAG" >&2
+            exit 1
+          fi
+          echo "Instance: $instance_id"
+
+          command_id=$(aws ssm send-command \
+            --instance-ids "$instance_id" \
+            --document-name AWS-RunShellScript \
+            --comment "deploy ${{ steps.tags.outputs.short_sha }}" \
+            --parameters commands="sudo -u ec2-user /home/ec2-user/app/deploy.sh ${{ github.sha }}" \
+            --query Command.CommandId --output text)
+          echo "Command: $command_id"
+
+          # The waiter exits non-zero when the command fails, but we want the
+          # script's own output first — so swallow it and check status after.
+          aws ssm wait command-executed \
+            --command-id "$command_id" --instance-id "$instance_id" || true
+
+          status=$(aws ssm get-command-invocation \
+            --command-id "$command_id" --instance-id "$instance_id" \
+            --query Status --output text)
+
+          echo "--- deploy.sh output ---"
+          aws ssm get-command-invocation \
+            --command-id "$command_id" --instance-id "$instance_id" \
+            --query StandardOutputContent --output text
+          aws ssm get-command-invocation \
+            --command-id "$command_id" --instance-id "$instance_id" \
+            --query StandardErrorContent --output text >&2
+
+          [ "$status" = "Success" ] || { echo "Deploy finished with status: $status" >&2; exit 1; }
 
       - name: Summary
         run: |
           echo "### Images pushed" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "NGINX_IMAGE=${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-nginx:${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "BACKEND_IMAGE=${{ steps.ecr.outputs.registry }}/eri-pharmacy-staging-backend:${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "./deploy.sh ${{ steps.tags.outputs.short_sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "(or the full SHA ${{ github.sha }})" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY

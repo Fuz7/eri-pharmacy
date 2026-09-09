@@ -19,3 +19,8 @@ output "github_actions_role_arn" {
   description = "Role ARN — set as the GitHub repo variable AWS_ROLE_ARN"
   value       = aws_iam_role.github_actions.arn
 }
+
+output "ec2_instance_id" {
+  description = "Instance ID — the deploy step looks this up by tag, so it is informational"
+  value       = aws_instance.app.id
+}

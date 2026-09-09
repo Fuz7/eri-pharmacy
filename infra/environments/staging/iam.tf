@@ -62,3 +62,11 @@ resource "aws_iam_role_policy" "ecr_pull" {
     ]
   })
 }
+
+# Lets the SSM agent register the instance and receive commands. This is what
+# makes `aws ssm send-command` reach the box — and it also enables Session
+# Manager, so SSH on port 22 becomes optional rather than required.
+resource "aws_iam_role_policy_attachment" "ssm_core" {
+  role       = aws_iam_role.app.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}

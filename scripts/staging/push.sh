@@ -2,7 +2,10 @@
 #
 # Copy the two files the staging instance needs. Run from your machine.
 #
-#   ./push.sh <elastic-ip>        or   EC2_HOST=1.2.3.4 ./push.sh
+#   ./scripts/staging/push.sh <elastic-ip>
+#   EC2_HOST=1.2.3.4 ./scripts/staging/push.sh
+#
+# Works from any directory — paths are resolved relative to this file.
 #
 # Since the instance pulls images from ECR instead of building, it needs no
 # source code — only the compose file and the deploy script. Run this whenever
@@ -10,6 +13,10 @@
 # through CI and ./deploy.sh <sha> on the box.
 
 set -euo pipefail
+
+# scripts/staging/ -> repository root, so the relative paths below hold no
+# matter where this is invoked from.
+cd "$(dirname "$(readlink -f "$0")")/../.."
 
 INFRA_DIR="infra/environments/staging"
 
@@ -35,7 +42,7 @@ DEST="/home/ec2-user/app"
 [ -f "$KEY" ] || { echo "ssh key not found: $KEY" >&2; exit 1; }
 
 ssh -i "$KEY" "ec2-user@${HOST}" "mkdir -p ${DEST}"
-scp -i "$KEY" docker-compose.staging.yml deploy.sh "ec2-user@${HOST}:${DEST}/"
+scp -i "$KEY" docker-compose.staging.yml scripts/staging/deploy.sh "ec2-user@${HOST}:${DEST}/"
 # scp applies the remote umask rather than preserving the mode.
 ssh -i "$KEY" "ec2-user@${HOST}" "chmod +x ${DEST}/deploy.sh"
 

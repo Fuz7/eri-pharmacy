@@ -72,3 +72,42 @@ resource "aws_iam_role_policy" "github_actions_ecr" {
     ]
   })
 }
+
+# Lets the workflow trigger a deploy on the instance without SSH: no private
+# key in GitHub, and port 22 can stay closed.
+resource "aws_iam_role_policy" "github_actions_deploy" {
+  name = "${local.name}-gha-deploy"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        # Scoped to this one instance and the one document it may run.
+        Effect = "Allow"
+        Action = "ssm:SendCommand"
+        Resource = [
+          aws_instance.app.arn,
+          "arn:aws:ssm:${var.region}::document/AWS-RunShellScript",
+        ]
+      },
+      {
+        # Command IDs are generated at send time, so they cannot be scoped.
+        # These are read-only: they report status and output, nothing more.
+        Effect = "Allow"
+        Action = [
+          "ssm:GetCommandInvocation",
+          "ssm:ListCommandInvocations",
+        ]
+        Resource = "*"
+      },
+      {
+        # Used to find the instance by tag, so a rebuilt instance needs no
+        # change in GitHub. DescribeInstances cannot be resource-scoped.
+        Effect   = "Allow"
+        Action   = "ec2:DescribeInstances"
+        Resource = "*"
+      },
+    ]
+  })
+}
