@@ -11,7 +11,7 @@ There are two ways to run it: **everything in Docker** (recommended — no setup
 ## Option A — Docker
 
 The only prerequisite is Docker with Docker Compose.
-
+ 
 ```bash
 docker compose up --build
 ```
