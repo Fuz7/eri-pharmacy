@@ -23,7 +23,10 @@ services:
       - ./backend:/app
       - /app/node_modules
     depends_on:
-      - db
+      db:
+        # `npm run start` runs migrations first, so the database has to be
+        # accepting connections before the backend container starts.
+        condition: service_healthy
     env_file:
       - .env
   db:
@@ -36,6 +39,12 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
 volumes:
   pgdata:

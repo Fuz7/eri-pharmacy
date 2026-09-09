@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --watch ./src/index.js"
+    "start": "npm run migrate && node --watch ./src/index.js",
+    "migrate": "node-pg-migrate up -d POSTGRES_CONNECTION -m migrations",
+    "migrate:down": "node-pg-migrate down -d POSTGRES_CONNECTION -m migrations",
+    "migrate:create": "node-pg-migrate create -m migrations -j sql"
   },
   "keywords": [],
   "author": "",
@@ -14,6 +17,7 @@
   "dependencies": {
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "node-pg-migrate": "^9.0.0",
     "pg": "^8.16.0"
   }
 }
