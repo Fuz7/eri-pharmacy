@@ -1,6 +1,6 @@
-# Build context is the REPOSITORY ROOT (set in docker-compose.staging.yml),
-# because this image needs both ./frontend (the source to build) and ./nginx
-# (the config to serve it with). See ../.dockerignore for what is excluded.
+# Build context is the REPOSITORY ROOT (set by the compose file and the CI
+# workflow), because this image needs both ./frontend (the source to build)
+# and ./nginx (the config to serve it with). See ../.dockerignore for exclusions.
 
 # --- build the SPA -----------------------------------------------------
 FROM node:22-alpine AS build

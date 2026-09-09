@@ -1,0 +1,82 @@
+# Production stack for the single EC2 instance in infra/environments/production.
+#
+#   ./deploy.sh <commit-sha>
+#
+# One nginx container serves the built SPA and proxies /api to the backend on
+# the same origin, so the React code needs no CORS and no absolute API URLs.
+# Postgres and Express are never reachable from outside the box.
+
+name: eri-pharmacy-production
+
+services:
+  nginx:
+    # Built by CI and pulled from ECR — the instance never compiles anything.
+    # deploy.sh writes this value into .env from the tag it is given.
+    image: ${NGINX_IMAGE}
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # Blank or unset serves plain HTTP on a catch-all server_name, which is
+      # what you want before a domain exists. Set it to the real hostname once
+      # DNS points here; the entrypoint switches to HTTPS as soon as a
+      # certificate for that name is present.
+      - SERVER_NAME=${SERVER_NAME:-}
+    volumes:
+      # certbot's webroot for ACME challenges, and the certificates it issues.
+      # Both live on the host; see the certbot notes at the bottom of this file.
+      - /srv/acme:/srv/acme:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    image: ${BACKEND_IMAGE}
+    # No published port: nginx reaches it over the Compose network.
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16
+    # No published port either — 5432 stays inside the box, which is what
+    # the security group already assumes.
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+
+# --- Enabling TLS ------------------------------------------------------
+# Prerequisite: a domain with an A record pointing at this instance.
+#
+# On the EC2 host, once:
+#   sudo dnf install -y certbot
+#   sudo mkdir -p /srv/acme
+#   # set SERVER_NAME in .env, then start the stack so :80 answers
+#   sudo certbot certonly --webroot -w /srv/acme -d yourdomain.com
+#   docker compose -f docker-compose.production.yml restart nginx
+#
+# The entrypoint detects the new certificate and switches to HTTPS. certbot
+# installs its own systemd timer for renewal; add a reload hook so nginx picks
+# up renewed certificates:
+#   sudo certbot renew --deploy-hook \
+#     "docker compose -f /srv/app/docker-compose.production.yml exec nginx nginx -s reload"
+#
+# Do not point SERVER_NAME at a name that does not resolve here — repeated
+# failed challenges hit a Let's Encrypt limit of 5 per hostname per hour.

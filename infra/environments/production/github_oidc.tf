@@ -2,25 +2,13 @@
 # of stored access keys. Nothing secret is kept in GitHub, and there is nothing
 # to rotate — the credentials last about an hour per workflow run.
 
-# The OIDC provider is ACCOUNT-WIDE: IAM allows only one per URL per account.
-# It lives in infra/shared so that neither environment can destroy it out from
-# under the other. Apply infra/shared before this configuration.
+# The OIDC provider is ACCOUNT-WIDE: only one can exist per account for
+# token.actions.githubusercontent.com, and staging already creates it.
+# Creating a second here fails with EntityAlreadyExists, so read it instead.
+#
+# This means staging must be applied before production.
 data "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
-}
-
-# ONE-TIME MIGRATION — delete this block after the first successful apply.
-#
-# The provider was previously created here, so it is still in this state file.
-# `removed` drops it from state WITHOUT deleting it from AWS, which is what
-# lets infra/shared adopt it. Using `terraform state rm` would do the same
-# thing imperatively; this leaves a reviewable record in the diff.
-removed {
-  from = aws_iam_openid_connect_provider.github
-
-  lifecycle {
-    destroy = false
-  }
 }
 
 resource "aws_iam_role" "github_actions" {
