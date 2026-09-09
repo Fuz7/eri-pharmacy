@@ -1,7 +1,8 @@
-# Staging image. Kept separate from Dockerfile.production so the two can
-# diverge without a change to one silently altering the other.
+# Production image. Currently identical to Dockerfile.staging — kept separate so
+# the two can diverge (resource limits, log level, a different base tag) without
+# a change to one silently altering the other.
 #
-# Built by .github/workflows/staging.yml with ./backend as the context.
+# Built by .github/workflows/production.yml with ./backend as the context.
 
 FROM node:22-alpine
 

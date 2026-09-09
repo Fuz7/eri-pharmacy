@@ -1,0 +1,12 @@
+# Copy to terraform.tfvars and fill in. Both are required — no defaults.
+#
+# ami must be an Amazon Linux 2023 image in var.region (ap-southeast-1).
+# AMI IDs are region-specific, so an ID copied from another region will fail.
+ami = "<ami>"
+
+# An EC2 key pair that already exists in the region. Use a key separate from
+# staging's, so access to one environment does not grant access to the other.
+key_name = "<key_name>"
+
+# Uncomment to give production more headroom than staging's t2.micro.
+# instance_type = "t3.small"

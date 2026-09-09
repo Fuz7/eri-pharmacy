@@ -1,4 +1,4 @@
-# Staging stack for the single EC2 instance in infra/environments/staging.
+# Production stack for the single EC2 instance in infra/environments/production.
 #
 #   ./deploy.sh <commit-sha>
 #
@@ -6,7 +6,7 @@
 # the same origin, so the React code needs no CORS and no absolute API URLs.
 # Postgres and Express are never reachable from outside the box.
 
-name: eri-pharmacy-staging
+name: eri-pharmacy-production
 
 services:
   nginx:
@@ -69,14 +69,14 @@ volumes:
 #   sudo dnf install -y certbot
 #   sudo mkdir -p /srv/acme
 #   # set SERVER_NAME in .env, then start the stack so :80 answers
-#   sudo certbot certonly --webroot -w /srv/acme -d staging.yourdomain.com
-#   docker compose -f docker-compose.staging.yml restart nginx
+#   sudo certbot certonly --webroot -w /srv/acme -d yourdomain.com
+#   docker compose -f docker-compose.production.yml restart nginx
 #
 # The entrypoint detects the new certificate and switches to HTTPS. certbot
 # installs its own systemd timer for renewal; add a reload hook so nginx picks
 # up renewed certificates:
 #   sudo certbot renew --deploy-hook \
-#     "docker compose -f /srv/app/docker-compose.staging.yml exec nginx nginx -s reload"
+#     "docker compose -f /srv/app/docker-compose.production.yml exec nginx nginx -s reload"
 #
 # Do not point SERVER_NAME at a name that does not resolve here — repeated
 # failed challenges hit a Let's Encrypt limit of 5 per hostname per hour.

@@ -1,4 +1,4 @@
-# Applies to the repository-root build context used by nginx/Dockerfile.staging.
+# Applies to the repository-root build context used by nginx/Dockerfile.
 # (backend/.dockerignore covers the build whose context is ./backend.)
 
 **/node_modules
