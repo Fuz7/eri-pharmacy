@@ -128,7 +128,7 @@ jobs:
       - name: Assume the AWS role via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          role-to-assume: ${{ vars.AWS_ROLE_ARN_STAGING }}
           aws-region: ${{ env.AWS_REGION }}
 
       # `sudo -u ec2-user` matters: SSM executes as root, and deploy.sh rewrites
